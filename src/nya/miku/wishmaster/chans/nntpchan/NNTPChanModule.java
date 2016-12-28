@@ -83,7 +83,12 @@ public class NNTPChanModule extends AbstractChanModule {
     }
 
     private String _threadURL(String msgid) {
-        String posthash = CryptoUtils.computeSHA1(msgid);
+        String posthash;
+        if (msgid.startsWith("<")) {
+            posthash = CryptoUtils.computeSHA1(msgid);
+        } else {
+            posthash = msgid;
+        }
         return _makeURL(String.format("thread-%s.json", posthash));
     }
 
@@ -103,7 +108,7 @@ public class NNTPChanModule extends AbstractChanModule {
         PostModel post = new PostModel();
         post.number = obj.getString("HashLong");
         post.comment = obj.getString("PostMessage");
-        post.parentThread = obj.getString("Parent");
+        post.parentThread = CryptoUtils.computeSHA1(obj.getString("Parent"));
         post.name = obj.getString("PostName");
         post.op = obj.getString("Message_id").equals(obj.getString("Parent"));
         post.subject = obj.getString("PostSubject");
@@ -146,7 +151,14 @@ public class NNTPChanModule extends AbstractChanModule {
     }
 
     public String sendPost(SendPostModel model, ProgressListener listener, CancellableTask task) throws Exception  {
-        String refmsgid = model.threadNumber;
+        String refmsg = null;
+        if(model.threadNumber != null) {
+            HttpRequestModel req = HttpRequestModel.builder().setGET().build();
+            JSONArray jposts = HttpStreamer.getInstance().getJSONArrayFromUrl(_makeURL(String.format("/api/find?hash=%s", model.threadNumber)), req, httpClient, listener, task, true);
+            if(jposts.length() > 0) {
+                refmsg = jposts.getJSONObject(0).getString("Message_id");
+            }
+        }
 
         String url = _makeURL(String.format("/post/%s?json", model.boardName));
 
@@ -156,7 +168,7 @@ public class NNTPChanModule extends AbstractChanModule {
         postBuilder.addString("message", model.comment);
         postBuilder.addString("subject", model.subject);
         postBuilder.addString("name", model.name);
-        postBuilder.addString("reference", refmsgid);
+        if(refmsg!= null) postBuilder.addString("reference", refmsg);
 
         HttpRequestModel request = HttpRequestModel.builder().setPOST(postBuilder.build()).build();
         HttpResponseModel response = null;
@@ -166,7 +178,7 @@ public class NNTPChanModule extends AbstractChanModule {
             JSONObject jresult = new JSONObject(new JSONTokener(in));
 
             if (jresult.isNull("error")) {
-                 return jresult.getString("url");
+                 return buildUrl(parseUrl(_makeURL(jresult.getString("url"))));
             }
             throw new Exception(jresult.getString("error"));
 
@@ -240,7 +252,7 @@ public class NNTPChanModule extends AbstractChanModule {
         model.chanName = getChanName();
         Matcher m = RE_THREADNAME.matcher(url);
         if(m.find()) {
-            model.postNumber = m.group(1);
+            model.threadNumber = m.group(1);
             model.type = UrlPageModel.TYPE_THREADPAGE;
             return model;
         }
