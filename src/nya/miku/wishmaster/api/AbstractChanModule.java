@@ -42,6 +42,7 @@ import nya.miku.wishmaster.lib.org_json.JSONObject;
 import cz.msebera.android.httpclient.HttpHost;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.cookie.Cookie;
+import nya.miku.wishmaster.ui.posting.CustomMarkupModel;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -453,5 +454,14 @@ public abstract class AbstractChanModule implements HttpChanModule {
     public boolean getCaptchaAutoUpdatePreference(){
         return false;
     }
+
+    /**
+     * Только, если BoardModel.markType == MARK_CLASS
+     * @param board
+     * @return CustomMarkupModel
+     */
+    public CustomMarkupModel getCustomMarkup(String board) {
+        return null;
+    };
 
 }

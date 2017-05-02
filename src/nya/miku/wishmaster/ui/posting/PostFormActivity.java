@@ -131,25 +131,25 @@ public class PostFormActivity extends Activity implements View.OnClickListener {
                 try {
                     switch (v.getId()) {
                         case R.id.postform_mark_bold:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_BOLD);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_BOLD);
                             break;
                         case R.id.postform_mark_italic:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_ITALIC);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_ITALIC);
                             break;
                         case R.id.postform_mark_underline:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_UNDERLINE);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_UNDERLINE);
                             break;
                         case R.id.postform_mark_strike:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_STRIKE);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_STRIKE);
                             break;
                         case R.id.postform_mark_spoiler:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_SPOILER);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_SPOILER);
                             break;
                         case R.id.postform_mark_quote:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_QUOTE);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_QUOTE);
                             break;
                         case R.id.postform_mark_code:
-                            PostFormMarkup.markup(boardModel.markType, commentField, PostFormMarkup.FEATURE_CODE);
+                            PostFormMarkup.markup(boardModel, commentField, PostFormMarkup.FEATURE_CODE);
                             break;
                     }
                 } catch (Exception e) {
@@ -488,13 +488,13 @@ public class PostFormActivity extends Activity implements View.OnClickListener {
         }
         
         boolean[] markupEnabled = {
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_QUOTE),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_BOLD),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_ITALIC),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_UNDERLINE),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_STRIKE),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_SPOILER),
-                PostFormMarkup.hasMarkupFeature(boardModel.markType, PostFormMarkup.FEATURE_CODE),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_QUOTE),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_BOLD),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_ITALIC),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_UNDERLINE),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_STRIKE),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_SPOILER),
+                PostFormMarkup.hasMarkupFeature(boardModel, PostFormMarkup.FEATURE_CODE),
         };
         if (markupEnabled[0] || markupEnabled[1] || markupEnabled[2] || markupEnabled[3] || markupEnabled[4] || markupEnabled[5]) {
             markLayout.setVisibility(View.VISIBLE);

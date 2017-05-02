@@ -20,7 +20,10 @@ package nya.miku.wishmaster.ui.posting;
 
 import android.text.Editable;
 import android.widget.EditText;
+
+import nya.miku.wishmaster.api.AbstractChanModule;
 import nya.miku.wishmaster.api.models.BoardModel;
+import nya.miku.wishmaster.common.MainApplication;
 
 public class PostFormMarkup {
     public static final int FEATURE_BOLD = 1;
@@ -31,7 +34,12 @@ public class PostFormMarkup {
     public static final int FEATURE_QUOTE = 6;
     //http://wakaba.c3.cx/docs/docs.html#WakabaMark
     public static final int FEATURE_CODE = 7;
-    
+
+    public static CustomMarkupModel getCustomMarkup(BoardModel boardModel) {
+        AbstractChanModule chan = (AbstractChanModule) MainApplication.getInstance().getChanModule(boardModel.chan);
+        return chan.getCustomMarkup(boardModel.boardName);
+    }
+
     public static boolean hasMarkupFeature(int markType, int feature) {
         switch (markType) {
             case BoardModel.MARK_NOMARK: return false;
@@ -41,6 +49,21 @@ public class PostFormMarkup {
             case BoardModel.MARK_NULL_CHAN: return feature != FEATURE_UNDERLINE;
         }
         return false;
+    }
+
+    public static boolean hasMarkupFeature(BoardModel boardModel, int feature) {
+        int markType = boardModel.markType;
+        if (markType == BoardModel.MARK_CLASS) return getCustomMarkup(boardModel).hasMarkupFeature(feature);
+        else return hasMarkupFeature(markType, feature);
+    }
+
+    public static void markup(BoardModel boardModel, EditText commentField, int feature) {
+        int markType = boardModel.markType;
+        if (markType == BoardModel.MARK_CLASS) {
+            getCustomMarkup(boardModel).markup(commentField, feature);
+        } else {
+            markup(markType, commentField, feature);
+        }
     }
     
     public static void markup(int markType, EditText commentField, int feature) {
