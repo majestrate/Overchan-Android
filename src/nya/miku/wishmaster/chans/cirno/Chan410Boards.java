@@ -104,7 +104,7 @@ public class Chan410Boards {
         else if (name.equals("a")) model.attachmentsFormatFilters = ATTACHMENT_FILTERS_A;
         else if (name.equals("dev")) model.attachmentsFormatFilters = ATTACHMENT_FILTERS_DEV;
         else model.attachmentsFormatFilters = ATTACHMENT_FILTERS;
-        model.markType = BoardModel.MARK_WAKABAMARK;
+        model.markType = BoardModel.MARK_CLASS;
         
         model.firstPage = 0;
         model.lastPage = BoardModel.LAST_PAGE_UNDEFINED;

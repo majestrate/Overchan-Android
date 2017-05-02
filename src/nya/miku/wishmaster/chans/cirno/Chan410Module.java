@@ -37,6 +37,9 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceGroup;
 import android.support.v4.content.res.ResourcesCompat;
+import android.text.Editable;
+import android.widget.EditText;
+
 import nya.miku.wishmaster.R;
 import nya.miku.wishmaster.api.AbstractChanModule;
 import nya.miku.wishmaster.api.interfaces.CancellableTask;
@@ -58,6 +61,10 @@ import nya.miku.wishmaster.http.streamer.HttpResponseModel;
 import nya.miku.wishmaster.http.streamer.HttpStreamer;
 import nya.miku.wishmaster.http.streamer.HttpWrongStatusCodeException;
 import nya.miku.wishmaster.lib.org_json.JSONObject;
+import nya.miku.wishmaster.ui.posting.CustomMarkupModel;
+import nya.miku.wishmaster.ui.posting.PostFormMarkup;
+
+import static nya.miku.wishmaster.ui.posting.PostFormMarkup.FEATURE_STRIKE;
 
 public class Chan410Module extends AbstractChanModule {
     
@@ -66,6 +73,8 @@ public class Chan410Module extends AbstractChanModule {
     static final String CHAN410_URL = "http://" + CHAN410_DOMAIN + "/";
     
     private static final String PREF_KEY_FAPTCHA_COOKIES = "PREF_KEY_FAPTCHA_COOKIES";
+
+    private CustomMarkupModel markupModel = new Mark410Chan(BoardModel.MARK_WAKABAMARK);
     
     public Chan410Module(SharedPreferences preferences, Resources resources) {
         super(preferences, resources);
@@ -341,5 +350,36 @@ public class Chan410Module extends AbstractChanModule {
         }
         return model;
     }
-    
+
+    @Override
+    public CustomMarkupModel getCustomMarkup(String board) {
+        return markupModel;
+    };
+
+    public static class Mark410Chan extends CustomMarkupModel {
+        public Mark410Chan(int baseMarkup) {
+            this.baseMarkup = baseMarkup;
+        }
+
+        @Override
+        public boolean hasMarkupFeature(int feature) {
+            return super.hasMarkupFeature(feature);
+        }
+
+        @Override
+        public void markup(EditText commentField, int feature) {
+            Editable comment = commentField.getEditableText();
+            String text = comment.toString();
+            int selectionStart = Math.max(0, commentField.getSelectionStart());
+            int selectionEnd = Math.min(text.length(), commentField.getSelectionEnd());
+            text = text.substring(selectionStart, selectionEnd);
+
+            if (feature == FEATURE_STRIKE) {
+                comment.replace(selectionStart, selectionEnd, "^^" + text.replace("\n", "^^\n^^") + "^^");
+                commentField.setSelection(selectionStart + 2);
+            } else {
+                PostFormMarkup.markup(baseMarkup, commentField, feature);
+            }
+        }
+    }
 }
