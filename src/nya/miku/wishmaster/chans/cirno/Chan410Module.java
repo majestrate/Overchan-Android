@@ -62,7 +62,6 @@ import nya.miku.wishmaster.http.streamer.HttpStreamer;
 import nya.miku.wishmaster.http.streamer.HttpWrongStatusCodeException;
 import nya.miku.wishmaster.lib.org_json.JSONObject;
 import nya.miku.wishmaster.ui.posting.CustomMarkupModel;
-import nya.miku.wishmaster.ui.posting.PostFormMarkup;
 
 import static nya.miku.wishmaster.ui.posting.PostFormMarkup.FEATURE_STRIKE;
 
@@ -378,7 +377,7 @@ public class Chan410Module extends AbstractChanModule {
                 comment.replace(selectionStart, selectionEnd, "^^" + text.replace("\n", "^^\n^^") + "^^");
                 commentField.setSelection(selectionStart + 2);
             } else {
-                PostFormMarkup.markup(baseMarkup, commentField, feature);
+                super.markup(commentField, feature);
             }
         }
     }
