@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package nya.miku.wishmaster.ui.posting;
+package nya.miku.wishmaster.ui.posting.markup;
 
 import android.widget.EditText;
 
 import nya.miku.wishmaster.api.models.BoardModel;
+import nya.miku.wishmaster.ui.posting.PostFormMarkup;
 
 public abstract class CustomMarkupModel {
     protected int baseMarkup = BoardModel.MARK_NOMARK;
