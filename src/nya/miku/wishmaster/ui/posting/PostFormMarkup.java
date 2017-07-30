@@ -24,7 +24,6 @@ import android.widget.EditText;
 import nya.miku.wishmaster.api.AbstractChanModule;
 import nya.miku.wishmaster.api.models.BoardModel;
 import nya.miku.wishmaster.common.MainApplication;
-import nya.miku.wishmaster.ui.posting.markup.CustomMarkupModel;
 
 public class PostFormMarkup {
     public static final int FEATURE_BOLD = 1;

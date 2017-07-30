@@ -42,7 +42,7 @@ import nya.miku.wishmaster.lib.org_json.JSONObject;
 import cz.msebera.android.httpclient.HttpHost;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.cookie.Cookie;
-import nya.miku.wishmaster.ui.posting.markup.CustomMarkupModel;
+import nya.miku.wishmaster.ui.posting.CustomMarkupModel;
 
 import android.content.Context;
 import android.content.SharedPreferences;
