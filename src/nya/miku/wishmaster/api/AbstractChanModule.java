@@ -345,6 +345,25 @@ public abstract class AbstractChanModule implements HttpChanModule {
             String boardName, int catalogType, ProgressListener listener, CancellableTask task, ThreadModel[] oldList) throws Exception {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public ThreadModel getThreadPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList, ThreadModel threadInfo)
+            throws Exception {
+        ThreadModel model = new ThreadModel();
+        model.posts = getPostsList(boardName, threadNumber, listener, task, oldList);
+        model.postsCount = calcPostsCount(oldList, model.posts, threadInfo);
+        return model;
+    }
+    
+    protected int calcPostsCount(PostModel[] oldList, PostModel[] newList, ThreadModel threadInfo) {
+        int postsCount;
+        if (oldList != null && threadInfo != null && threadInfo.postsCount > -1) {
+            postsCount = threadInfo.postsCount + (newList.length - oldList.length);
+        } else {
+            postsCount = newList.length;
+        }
+        return postsCount;
+    }
     
     @Override
     public PostModel[] search(String boardName, String searchRequest, ProgressListener listener, CancellableTask task) throws Exception {

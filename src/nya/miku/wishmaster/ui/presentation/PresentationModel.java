@@ -259,6 +259,9 @@ public class PresentationModel {
             rebuild = true;
             Logger.d(TAG, "rebuild: new list is shorter");
         } else {
+            if (presentationList.size() > 0 && source.threadInfo != null) {
+                presentationList.get(0).buildThreadConditionString(source.threadInfo.isSticky, source.threadInfo.isClosed, source.threadInfo.isCyclical);
+            }
             for (int i=0, size=presentationList.size(); i<size; ++i) {
                 if (!presentationList.get(i).sourceModel.number.equals(posts[i].number) ||
                         ChanModels.hashPostModel(posts[i]) != presentationList.get(i).sourceModelHash) {
@@ -292,7 +295,8 @@ public class PresentationModel {
         
         final boolean openSpoilers = MainApplication.getInstance().settings.openSpoilers();
         
-        for (int i=presentationList.size(); i<posts.length; ++i) {
+        int presentationListSize = presentationList.size();
+        for (int i=presentationListSize; i<posts.length; ++i) {
             if (task.isCancelled()) return;
             PresentationItemModel model = new PresentationItemModel(
                     posts[i],
@@ -314,6 +318,9 @@ public class PresentationModel {
                         presentationList.get(postPosition).addReferenceFrom(model.sourceModel.number);
                     }
                 }
+            }
+            if (presentationListSize == 0 && i == presentationListSize && source.threadInfo != null) {
+                model.buildThreadConditionString(source.threadInfo.isSticky, source.threadInfo.isClosed, source.threadInfo.isCyclical);
             }
             presentationList.add(model);
             for (int j=0; j<model.attachmentHashes.length; ++j) {

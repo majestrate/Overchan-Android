@@ -129,6 +129,24 @@ public interface ChanModule {
      */
     PostModel[] getPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList)
             throws Exception;
+
+    /**
+     * Получить (или обновить) тред (список постов и метки треда)<br>
+     * В случае, если список каждый раз загружается с нуля (а не только последние посты), рекомендуется использовать метод
+     * {@link ChanModels#mergePostsLists(java.util.List, java.util.List)} для объединения старого и нового списков (если старый список не равен null),
+     * таким образом не будут потеряны удалённые посты (которые присутствовали в старом списке, но отсутствуют в новом),
+     * к ним лишь будет добавлена отметка о том, что сообщение удалено.
+     * @param boardName название доски (напр, "b", "int")
+     * @param threadNumber номер треда
+     * @param listener интерфейс отслеживания прогресса (может принимать null)
+     * @param task интерфейс отменяемой задачи
+     * @param oldList старый список постов (может принимать null).
+     * Объекты из этого списка не должны быть изменены (исключение: поле {@link PostModel#deleted})
+     * @param threadInfo
+     * @return список (массив) постов треда
+     */
+    ThreadModel getThreadPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList, ThreadModel threadInfo)
+            throws Exception;
     
     /**
      * Поиск по доске.<br>

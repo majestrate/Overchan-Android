@@ -2238,29 +2238,33 @@ public class BoardFragment extends Fragment implements AdapterView.OnItemClickLi
                 }
             }
             //информация о треде (для списка тредов), количество постов, надпись о закрытом/прикрепленном треде
-            if (popupWidth == null && fragment().pageType == TYPE_THREADSLIST) {
-                if (model.postsCountString != null) {
-                    tag.postsCountView.setText(model.postsCountString);
-                    if (!tag.postsCountIsVisible) {
-                        tag.postsCountView.setVisibility(View.VISIBLE);
-                        tag.postsCountIsVisible = true;
-                    }
-                } else {
-                    if (tag.postsCountIsVisible) {
-                        tag.postsCountView.setVisibility(View.GONE);
-                        tag.postsCountIsVisible = false;
+            if (popupWidth == null) {
+                if (fragment().pageType == TYPE_THREADSLIST) {
+                    if (model.postsCountString != null) {
+                        tag.postsCountView.setText(model.postsCountString);
+                        if (!tag.postsCountIsVisible) {
+                            tag.postsCountView.setVisibility(View.VISIBLE);
+                            tag.postsCountIsVisible = true;
+                        }
+                    } else {
+                        if (tag.postsCountIsVisible) {
+                            tag.postsCountView.setVisibility(View.GONE);
+                            tag.postsCountIsVisible = false;
+                        }
                     }
                 }
-                if (model.threadConditionString != null) {
-                    tag.threadConditionView.setText(model.threadConditionString);
-                    if (!tag.threadConditionIsVisible) {
-                        tag.threadConditionView.setVisibility(View.VISIBLE);
-                        tag.threadConditionIsVisible = true;
-                    }
-                } else {
-                    if (tag.threadConditionIsVisible) {
-                        tag.threadConditionView.setVisibility(View.GONE);
-                        tag.threadConditionIsVisible = false;
+                if (fragment().pageType == TYPE_THREADSLIST || fragment().pageType == TYPE_POSTSLIST) {
+                    if (model.threadConditionString != null) {
+                        tag.threadConditionView.setText(model.threadConditionString);
+                        if (!tag.threadConditionIsVisible) {
+                            tag.threadConditionView.setVisibility(View.VISIBLE);
+                            tag.threadConditionIsVisible = true;
+                        }
+                    } else {
+                        if (tag.threadConditionIsVisible) {
+                            tag.threadConditionView.setVisibility(View.GONE);
+                            tag.threadConditionIsVisible = false;
+                        }
                     }
                 }
             }

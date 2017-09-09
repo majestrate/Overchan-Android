@@ -41,5 +41,7 @@ public class SerializablePage implements Serializable {
     //в зависимости от pageModel.type только одно из полей (posts и threads) содержит данные, другое null
     @Tag(2) public PostModel[] posts;
     @Tag(3) public ThreadModel[] threads;
+    // для хранения информации о треде
+    @Tag(4) public ThreadModel threadInfo;
     
 }

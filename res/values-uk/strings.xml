@@ -640,4 +640,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="newtab_select_local_directory">Вказати розташування каталогу</string>
     <string name="pref_scroll_to_active_tab_summary">Прокручувати до активної вкладки при закритті неактивній вкладки</string>
     <string name="pref_scroll_to_active_tab_title">Прокрутка до активної вкладки</string>
+    <string name="pref_deleted_limit_summary">Обмежити кількість видалених повідомлень які зберігаються в кеші</string>
+    <string name="pref_deleted_limit_title">Кількість видалених повідомлень</string>
 </resources>

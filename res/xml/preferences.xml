@@ -263,6 +263,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             android:key="@string/pref_key_scroll_to_active_tab"
             android:title="@string/pref_scroll_to_active_tab_title"
             android:summary="@string/pref_scroll_to_active_tab_summary" />
+
+        <EditTextPreference
+            android:key="@string/pref_key_deleted_limit"
+            android:title="@string/pref_deleted_limit_title"
+            android:summary="@string/pref_deleted_limit_summary"
+            android:inputType="number"
+            android:singleLine="true"
+            android:maxLength="5" />
     </PreferenceCategory>
     
     <PreferenceCategory android:title="@string/pref_cat_downloads" >

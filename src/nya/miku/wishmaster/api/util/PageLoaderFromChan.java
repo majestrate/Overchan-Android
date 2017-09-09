@@ -18,6 +18,10 @@
 
 package nya.miku.wishmaster.api.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ListIterator;
+
 import nya.miku.wishmaster.R;
 import nya.miku.wishmaster.api.ChanModule;
 import nya.miku.wishmaster.api.interfaces.CancellableTask;
@@ -73,8 +77,10 @@ public class PageLoaderFromChan implements Runnable {
                     page.threads = threads;
                     break;
                 case UrlPageModel.TYPE_THREADPAGE:
-                    PostModel[] posts = chan.getPostsList(urlPage.boardName, urlPage.threadNumber, null, task, page.posts);
-                    page.posts = posts;
+                    ThreadModel thread = chan.getThreadPostsList(urlPage.boardName, urlPage.threadNumber, null, task, page.posts, page.threadInfo);
+                    page.posts = ChanModels.removeDeletedPostsOverLimit(thread.posts, MainApplication.getInstance().settings.getDeletedPostCountLimit());
+                    thread.posts = null;
+                    page.threadInfo = thread;
                     break;
                 case UrlPageModel.TYPE_CATALOGPAGE:
                     ThreadModel[] catalog = chan.getCatalog(urlPage.boardName, urlPage.catalogType, null, task, page.threads);

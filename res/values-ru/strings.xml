@@ -636,4 +636,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="newtab_select_local_directory">Указать расположение каталога</string>
     <string name="pref_scroll_to_active_tab_title">Прокрутка до активной вкладки</string>
     <string name="pref_scroll_to_active_tab_summary">Прокручивать до активной вкладки при закрытии неактивной вкладки</string>
+    <string name="pref_deleted_limit_summary">Ограничить количество удаленных сообщений которые хранятся в кэше</string>
+    <string name="pref_deleted_limit_title">Количество удаленных сообщений</string>
 </resources>

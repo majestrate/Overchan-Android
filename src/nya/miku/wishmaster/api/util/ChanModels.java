@@ -19,10 +19,12 @@
 package nya.miku.wishmaster.api.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -232,5 +234,25 @@ public class ChanModels {
         }
         return result;
     }
-    
+
+    /**
+     * Оставить только limit удаленных постов в массиве
+     * @param posts массив постов
+     * @param limit сколько постов оставить; если limit < 0, то оставить все
+     * @return массив без удаленных постов
+     */
+    public static PostModel[] removeDeletedPostsOverLimit(PostModel[] posts, int limit) {
+        if (limit < 0) return posts;
+        ArrayList<PostModel> postsList = new ArrayList<PostModel>(Arrays.asList(posts));
+        ListIterator<PostModel> iter = postsList.listIterator(postsList.size());
+        int deletedPostCount = 0;
+        while (iter.hasPrevious()) {
+            if (iter.previous().deleted) {
+                deletedPostCount++;
+                if (deletedPostCount > limit) iter.remove();
+            }
+        }
+        return postsList.toArray(new PostModel[postsList.size()]);
+    }
+
 }

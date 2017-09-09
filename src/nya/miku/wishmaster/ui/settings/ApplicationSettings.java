@@ -542,4 +542,13 @@ public class ApplicationSettings {
         int result = (int) (resources.getDimensionPixelSize(R.dimen.post_thumbnail_size) * scale);
         return result;
     }    
+    
+    public int getDeletedPostCountLimit() {
+        try {
+            return Integer.parseInt(preferences.getString(resources.getString(R.string.pref_key_deleted_limit), null));
+        } catch (Exception e) {
+            return -1;
+        }
+        
+    }
 }
