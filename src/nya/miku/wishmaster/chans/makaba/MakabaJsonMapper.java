@@ -153,6 +153,12 @@ public class MakabaJsonMapper {
         model.isCyclical = getIntSafe(postsArray.getJSONObject(0), "endless", 0) != 0;
         return model;
     }
+
+    static void mapThreadMarks(JSONObject source, ThreadModel model) throws JSONException {
+        model.isSticky = getIntSafe(source, "sticky", 0) != 0;
+        model.isClosed = getIntSafe(source, "closed", 0) != 0;
+        model.isCyclical = getIntSafe(source, "endless", 0) != 0;
+    }
     
     static PostModel mapPostModel(JSONObject source, String boardName) throws JSONException {
         PostModel model = new PostModel();

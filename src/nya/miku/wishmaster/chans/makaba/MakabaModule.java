@@ -361,14 +361,17 @@ public class MakabaModule extends CloudflareChanModule {
     }
 
     @Override
-    public PostModel[] getPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList)
+    public ThreadModel getThreadPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList, ThreadModel threadInfo)
             throws Exception {
         boolean mobileAPI = preferences.getBoolean(getSharedKey(PREF_KEY_MOBILE_API), true);
+        ThreadModel model = new ThreadModel();
+        model.posts = oldList;
         if (!mobileAPI) {
             String url = domainUrl + boardName + "/res/" + threadNumber + ".json";
             JSONObject object = downloadJSONObject(url, (oldList != null), listener, task);
-            if (object == null) return oldList;
+            if (object == null) return model;
             JSONArray postsArray = object.getJSONArray("threads").getJSONObject(0).getJSONArray("posts");
+            mapThreadMarks(postsArray.getJSONObject(0), model);
             PostModel[] posts = new PostModel[postsArray.length()];
             for (int i=0; i<postsArray.length(); ++i) {
                 posts[i] = mapPostModel(postsArray.getJSONObject(i), boardName);
@@ -376,7 +379,9 @@ public class MakabaModule extends CloudflareChanModule {
             if (oldList != null) {
                 posts = ChanModels.mergePostsLists(Arrays.asList(oldList), Arrays.asList(posts));
             }
-            return posts;
+            model.posts = posts;
+            model.postsCount = calcPostsCount(oldList, model.posts, threadInfo);
+            return model;
         }
         try {
             String lastPost = threadNumber;
@@ -385,13 +390,16 @@ public class MakabaModule extends CloudflareChanModule {
             }
             String url = domainUrl + "makaba/mobile.fcgi?task=get_thread&board=" + boardName + "&thread=" + threadNumber + "&num=" + lastPost;
             JSONArray newPostsArray = downloadJSONArray(url, (oldList != null), listener, task);
-            if (newPostsArray == null) return oldList;
+            mapThreadMarks(newPostsArray.getJSONObject(0), model);
+            if (newPostsArray == null) return model;
             PostModel[] newPosts = new PostModel[newPostsArray.length()];
             for (int i=0; i<newPostsArray.length(); ++i) {
                 newPosts[i] = mapPostModel(newPostsArray.getJSONObject(i), boardName);
             }
+            model.posts = newPosts;
             if (oldList == null || oldList.length == 0) {
-                return newPosts;
+                model.postsCount = calcPostsCount(oldList, model.posts, threadInfo);
+                return model;
             } else {
                 long lastNum = Long.parseLong(lastPost);
                 ArrayList<PostModel> list = new ArrayList<PostModel>(Arrays.asList(oldList));
@@ -400,7 +408,9 @@ public class MakabaModule extends CloudflareChanModule {
                         list.add(newPosts[i]);
                     }
                 }
-                return list.toArray(new PostModel[list.size()]);
+                model.posts = list.toArray(new PostModel[list.size()]);
+                model.postsCount = calcPostsCount(oldList, model.posts, threadInfo);
+                return model;
             }
         } catch (JSONException e) {
             String lastPost = threadNumber;
@@ -422,6 +432,13 @@ public class MakabaModule extends CloudflareChanModule {
             }
             throw error == null ? e : new Exception(error);
         }
+    }
+
+    @Override
+    public PostModel[] getPostsList(String boardName, String threadNumber, ProgressListener listener, CancellableTask task, PostModel[] oldList)
+            throws Exception {
+        ThreadModel model = getThreadPostsList(boardName, threadNumber, listener, task, oldList, null);
+        return model.posts;
     }
 
     @Override
