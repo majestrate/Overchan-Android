@@ -36,11 +36,9 @@ import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.methods.HttpUriRequest;
 import cz.msebera.android.httpclient.client.methods.RequestBuilder;
 import cz.msebera.android.httpclient.util.EntityUtils;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.preference.CheckBoxPreference;
 import android.preference.PreferenceGroup;
 import android.support.v4.content.res.ResourcesCompat;
 import nya.miku.wishmaster.R;
@@ -57,7 +55,6 @@ import nya.miku.wishmaster.api.models.SimpleBoardModel;
 import nya.miku.wishmaster.api.models.ThreadModel;
 import nya.miku.wishmaster.api.models.UrlPageModel;
 import nya.miku.wishmaster.api.util.ChanModels;
-import nya.miku.wishmaster.api.util.LazyPreferences;
 import nya.miku.wishmaster.api.util.RegexUtils;
 import nya.miku.wishmaster.api.util.UrlPathUtils;
 import nya.miku.wishmaster.common.IOUtils;
@@ -82,16 +79,15 @@ public class HorochanModule extends CloudflareChanModule {
     private static final String RECAPTCHA_PUBLIC_KEY = "6LerWhMTAAAAABCXYL2CEv-YyPeM5WbUTx3CknKD";
     
     private static final Pattern URL_PATH_BOARDPAGE_PATTERN = Pattern.compile("([^/]+)(?:/(\\d+)?)?");
-    private static final Pattern URL_PATH_THREADPAGE_PATTERN = Pattern.compile("([^/]+)/thread/(\\d+)(?:#(\\d+)?)?");
+    private static final Pattern URL_PATH_THREADPAGE_PATTERN = Pattern.compile("([^/]+)/thread/(\\d+)(?:#[a-z]*(\\d+)?)?");
     
     private static final Pattern COMMENT_LINK = Pattern.compile("<a href=\"/(\\d+)\">");
     
-    private static final String[] ATTACHMENT_FORMATS = new String[] { "gif", "jpg", "jpeg", "png", "bmp", "webm" };
-    
-    private static final String PREF_KEY_RECAPTCHA_FALLBACK = "PREF_KEY_RECAPTCHA_FALLBACK";
+    private static final String[] ATTACHMENT_FORMATS = new String[] { "gif", "jpg", "jpeg", "png", "bmp", "webm", "mp4", "mp3" };
     
     private Map<String, String> boardNames = null;
     private Map<String, Integer> boardPagesCount = null;
+    private boolean threadCaptchaEnabled, postCaptchaEnabled;
     
     public HorochanModule(SharedPreferences preferences, Resources resources) {
         super(preferences, resources);
@@ -124,8 +120,12 @@ public class HorochanModule extends CloudflareChanModule {
         return (useHttps() ? "https://" : "http://") + (api ? "api." : "") + DOMAIN + "/";
     }
     
-    private String getStaticUrl() {
-        return (useHttps() ? "https://" : "http://") + "static." + DOMAIN + "/";
+    private String getStaticUrl(String storage) {
+        return (useHttps() ? "https://" : "http://") + storage + "." + DOMAIN + "/";
+    }
+
+    private String getAssetsUrl(String extension) {
+        return (useHttps() ? "https://" : "http://") + DOMAIN + "/assets/img/placeholder_" + extension + ".png";
     }
     
     @Override
@@ -135,14 +135,8 @@ public class HorochanModule extends CloudflareChanModule {
     
     @Override
     public void addPreferencesOnScreen(PreferenceGroup preferenceGroup) {
-        Context context = preferenceGroup.getContext();
+        addPasswordPreference(preferenceGroup);
         addOnlyNewPostsPreference(preferenceGroup, true);
-        CheckBoxPreference fallbackRecaptchaPref = new LazyPreferences.CheckBoxPreference(context); // recaptcha fallback
-        fallbackRecaptchaPref.setTitle(R.string.fourchan_prefs_new_recaptcha_fallback);
-        fallbackRecaptchaPref.setSummary(R.string.fourchan_prefs_new_recaptcha_fallback_summary);
-        fallbackRecaptchaPref.setKey(getSharedKey(PREF_KEY_RECAPTCHA_FALLBACK));
-        fallbackRecaptchaPref.setDefaultValue(false);
-        preferenceGroup.addPreference(fallbackRecaptchaPref);
         addHttpsPreference(preferenceGroup, true); //https
         addCloudflareRecaptchaFallbackPreference(preferenceGroup);
         addProxyPreferences(preferenceGroup);
@@ -150,10 +144,6 @@ public class HorochanModule extends CloudflareChanModule {
     
     private boolean loadOnlyNewPosts() {
         return loadOnlyNewPosts(true);
-    }
-    
-    private boolean recaptchaFallback() {
-        return preferences.getBoolean(getSharedKey(PREF_KEY_RECAPTCHA_FALLBACK), false);
     }
     
     @Override
@@ -223,21 +213,33 @@ public class HorochanModule extends CloudflareChanModule {
                 JSONObject file = files.getJSONObject(i);
                 String name = file.optString("name");
                 String ext = file.optString("ext");
+                String storage = file.optString("storage");
                 model.attachments[i] = new AttachmentModel();
-                model.attachments[i].path = getStaticUrl() + "src/" + name + "." + ext;
-                model.attachments[i].thumbnail = getStaticUrl() + "thumb/t" + name + ".jpeg";
                 model.attachments[i].size = file.optInt("size", -1);
                 if (model.attachments[i].size > 0) model.attachments[i].size = Math.round(model.attachments[i].size / 1024f);
                 model.attachments[i].width = file.optInt("width", -1);
                 model.attachments[i].height = file.optInt("height", -1);
-                if (ext.equalsIgnoreCase("gif")) {
-                    model.attachments[i].type = AttachmentModel.TYPE_IMAGE_GIF;
-                }
-                else if (ext.equalsIgnoreCase("webm")) {
-                    model.attachments[i].type = AttachmentModel.TYPE_VIDEO;
+                model.attachments[i].path = getStaticUrl(storage) + "src/" + name + "." + ext;
+                if (file.optInt("has_thumb") == 1) {
+                    model.attachments[i].thumbnail = getStaticUrl(storage) + "thumb/t" + name + ".jpeg";
                 }
                 else {
-                    model.attachments[i].type = AttachmentModel.TYPE_IMAGE_STATIC;
+                    model.attachments[i].thumbnail = getAssetsUrl(ext);
+                }
+                switch (ext) {
+                    case "gif":
+                        model.attachments[i].type = AttachmentModel.TYPE_IMAGE_GIF;
+                        break;
+                    case "webm":
+                    case "mp4":
+                        model.attachments[i].type = AttachmentModel.TYPE_VIDEO;
+                        break;
+                    case "mp3":
+                        model.attachments[i].type = AttachmentModel.TYPE_AUDIO;
+                        break;
+                    default:
+                        model.attachments[i].type = AttachmentModel.TYPE_IMAGE_STATIC;
+                        break;
                 }
             }
         }
@@ -249,6 +251,7 @@ public class HorochanModule extends CloudflareChanModule {
             embedded.type = AttachmentModel.TYPE_OTHER_NOTFILE;
             embedded.path = "http://youtube.com/watch?v=" + embed;
             embedded.thumbnail = "http://img.youtube.com/vi/" + embed + "/default.jpg";
+            embedded.size = -1;
             attachments[attachments.length - 1] = embedded;
             model.attachments = attachments;
         }
@@ -266,6 +269,7 @@ public class HorochanModule extends CloudflareChanModule {
             if (boardPagesCount == null) boardPagesCount = new HashMap<>();
             boardPagesCount.put(boardName, totalPages);
         }
+        threadCaptchaEnabled = json.optBoolean("captchaEnabled", true);
         try {
             JSONArray data = json.getJSONArray("data");
             ThreadModel[] threads = new ThreadModel[data.length()];
@@ -294,6 +298,7 @@ public class HorochanModule extends CloudflareChanModule {
         if (onlyNewPosts) url += "/after/" + oldList[oldList.length - 1].number;
         JSONObject json = downloadJSONObject(url, oldList != null, listener, task);
         if (json == null) return oldList;
+        postCaptchaEnabled = json.optBoolean("captchaEnabled", true);
         try {
             if (onlyNewPosts) {
                 JSONArray data = json.getJSONArray("data");
@@ -343,9 +348,13 @@ public class HorochanModule extends CloudflareChanModule {
             }
         }
         
-        String recaptchaResponse = Recaptcha2solved.pop(RECAPTCHA_PUBLIC_KEY);
-        if (recaptchaResponse == null) throw Recaptcha2.obtain(getUsingUrl(), RECAPTCHA_PUBLIC_KEY, null, CHAN_NAME, recaptchaFallback());
-        postEntityBuilder.addString("g-recaptcha-response", recaptchaResponse);
+        if (isThread ? threadCaptchaEnabled : postCaptchaEnabled) {
+            String recaptchaResponse = Recaptcha2solved.pop(RECAPTCHA_PUBLIC_KEY);
+            if (recaptchaResponse == null) {
+                throw Recaptcha2.obtain(getUsingUrl(), RECAPTCHA_PUBLIC_KEY, null, CHAN_NAME, false);
+            }
+            postEntityBuilder.addString("g-recaptcha-response", recaptchaResponse);
+        }
         
         HttpRequestModel request = HttpRequestModel.builder().setPOST(postEntityBuilder.build()).build();
         HttpResponseModel response = null;
@@ -355,7 +364,7 @@ public class HorochanModule extends CloudflareChanModule {
             in = new BufferedReader(new InputStreamReader(response.stream));
             JSONObject json = new JSONObject(new JSONTokener(in));
             if (response.statusCode == 200) return null;
-            if (response.statusCode == 400) {
+            if (response.statusCode == 400 || response.statusCode == 500) {
                 String error;
                 try {
                     JSONArray errors = json.getJSONArray("message");
@@ -416,7 +425,7 @@ public class HorochanModule extends CloudflareChanModule {
                     return url.append(model.boardName).append('/').append(model.boardPage).toString();
                 case UrlPageModel.TYPE_THREADPAGE:
                     return url.append(model.boardName).append("/thread/").append(model.threadNumber).
-                            append(model.postNumber == null || model.postNumber.length() == 0 ? "" : ("/#" + model.postNumber)).toString();
+                            append(model.postNumber == null || model.postNumber.length() == 0 ? "" : ("#p" + model.postNumber)).toString();
                 case UrlPageModel.TYPE_OTHERPAGE:
                     return url.append(model.otherPath.startsWith("/") ? model.otherPath.substring(1) : model.otherPath).toString();
             }

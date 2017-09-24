@@ -57,7 +57,6 @@ public class NNTPChanModule extends AbstractChanModule {
     private static final String TAG = "nntpchan";
 
     private static final Pattern RE_BOARDNAME = Pattern.compile("b/(overchan\\.[\\w\\.]+\\w)/(\\d)/json");
-    ptibs
     private static final Pattern RE_THREADNAME = Pattern.compile("t/([\\da-fA-F]{40})/json");
 
     public NNTPChanModule(SharedPreferences prefs, Resources res) {
