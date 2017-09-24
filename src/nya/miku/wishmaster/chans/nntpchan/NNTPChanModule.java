@@ -56,8 +56,9 @@ public class NNTPChanModule extends AbstractChanModule {
 
     private static final String TAG = "nntpchan";
 
-    private static final Pattern RE_BOARDNAME = Pattern.compile("(overchan\\.[\\w\\.]+\\w)\\-(\\d)");
-    private static final Pattern RE_THREADNAME = Pattern.compile("thread\\-([\\da-fA-F]{40})");
+    private static final Pattern RE_BOARDNAME = Pattern.compile("b/(overchan\\.[\\w\\.]+\\w)/(\\d)/json");
+    ptibs
+    private static final Pattern RE_THREADNAME = Pattern.compile("t/([\\da-fA-F]{40})/json");
 
     public NNTPChanModule(SharedPreferences prefs, Resources res) {
         super(prefs, res);
@@ -89,14 +90,14 @@ public class NNTPChanModule extends AbstractChanModule {
         } else {
             posthash = msgid;
         }
-        return _makeURL(String.format("thread-%s.json", posthash));
+        return _makeURL(String.format("t/%s/json", posthash));
     }
 
     private String _boardURL(String board, int page) {
         if(page < 0) {
             page = 0;
         }
-        return _makeURL(String.format("%s-%d.json", board, page));
+        return _makeURL(String.format("b/%s/%d/json", board, page));
 
     }
 
@@ -160,7 +161,7 @@ public class NNTPChanModule extends AbstractChanModule {
             }
         }
 
-        String url = _makeURL(String.format("/post/%s?json", model.boardName));
+        String url = _makeURL(String.format("/post/%s?t=json", model.boardName));
 
         ExtendedMultipartBuilder postBuilder = ExtendedMultipartBuilder.create().
                 setCharset(Charset.forName("UTF-8")).setDelegates(listener,task);
@@ -212,17 +213,19 @@ public class NNTPChanModule extends AbstractChanModule {
     }
 
     public ThreadModel[] getThreadsList(String boardName, int page, ProgressListener listener, CancellableTask task, ThreadModel[] oldList) throws Exception {
-        JSONArray j = downloadJSONArray(_boardURL(boardName, page), false, listener, task);
-
+        //JSONArray j = downloadJSONArray(_boardURL(boardName, page), false, listener, task);
+        JSONObject j = downloadJSONObject(_boardURL(boardName, page), false, listener, task);
         if(j == null) return oldList;
 
-        int len = j.length();
+        JSONArray posts = j.getJSONArray("posts");
+
+        int len = posts.length();
 
         if (len == 0) return new ThreadModel[0];
 
         ThreadModel[] threads = new ThreadModel[len];
         for (int idx = 0; idx < len; idx ++) {
-            JSONArray jthread = j.getJSONArray(idx);
+            JSONArray jthread = posts.getJSONArray(idx);
             int postcount = jthread.length();
             ThreadModel model = new ThreadModel();
             model.posts = new PostModel[postcount];
